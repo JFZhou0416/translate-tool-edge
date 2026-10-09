@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Screen Translate — test page</title>
+  <style>
+    body { max-width: 720px; margin: 40px auto; font: 16px/1.8 Georgia, serif; }
+    h1 { font-size: 26px; }
+    .term { color: #b00; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>The Lighthouse at the End of the World</h1>
+
+  <p>Every evening, the keeper climbed the spiral staircase with a lantern in his hand. The
+  <span class="term">lighthouse</span> had stood on that cliff for two hundred years, and nobody
+  remembered who had built it.</p>
+
+  <p>The <span class="term">vault</span> beneath the tower was cold and dry. Inside it, the keeper
+  kept a single wooden box, and in that box there was a letter that he had never dared to read.</p>
+
+  <h2>A Quiet Arrival</h2>
+
+  <p>On the third night of October, a small boat appeared out of the fog. It carried a young
+  woman who said nothing at all, and she walked up the path as though she had done it a
+  thousand times before.</p>
+
+  <ul>
+    <li>She asked for a cup of tea, and for a place to sleep until morning.</li>
+    <li>She asked whether the <span class="term">vault</span> was still locked.</li>
+    <li>She asked the keeper his name, and he realised he had forgotten it.</li>
+  </ul>
+
+  <blockquote>“The sea remembers everything,” she said. “It is only people who forget.”</blockquote>
+
+  <p>This page exists so that the browser extension can be tested without depending on the live
+  internet. It contains paragraphs, headings, list items and a quotation, which is enough to
+  check paragraph detection, chunking, insertion and restoration.</p>
+
+  <h2>Numbers and Details</h2>
+  <table border="1" cellpadding="6" cellspacing="0">
+    <tr><th>Year</th><th>Event</th></tr>
+    <tr><td>1821</td><td>The tower was completed, and the first lamp was lit.</td></tr>
+    <tr><td>1907</td><td>The last keeper wrote the final entry in the log book.</td></tr>
+  </table>
+
+  <pre><code>// this code block must NOT be translated
+const vault = open("secret.txt");
+console.log(vault);</code></pre>
+
+  <p>已经有一句话是中文了，这句不应该被翻译（用来验证"跳过已是中文"的规则）。</p>
+</body>
+</html>

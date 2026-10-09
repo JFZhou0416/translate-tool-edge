@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>屏幕翻译 · 设置</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { max-width: 720px; margin: 24px auto; padding: 0 16px;
+           font: 14px/1.7 system-ui, "Microsoft YaHei", sans-serif; }
+    h1 { font-size: 18px; }
+    h2 { font-size: 15px; margin-top: 22px; border-left: 4px solid #2f6fed; padding-left: 8px; }
+    label { display: block; margin: 12px 0 4px; font-weight: 600; }
+    input[type=text], input[type=password], input[type=number], textarea {
+      width: 100%; padding: 8px; border: 1px solid #8885; border-radius: 6px;
+      font: 13px/1.5 ui-monospace, Consolas, monospace; box-sizing: border-box; }
+    select { padding: 7px 8px; border: 1px solid #8885; border-radius: 6px; font-size: 13px; }
+    input[type=color] { width: 44px; height: 28px; padding: 2px; vertical-align: middle;
+                        border: 1px solid #8885; border-radius: 6px; background: none; }
+    label.inline { display: inline-flex; align-items: center; gap: 6px; font-weight: 400; margin: 0 14px 0 0; }
+    /* 译文预览：跟 content.css 里的 .st-trans 一个观感 */
+    #preview { margin: 10px 0 0; padding: 2px 0 2px 8px; border-left: 3px solid #7aa2f7;
+               color: #4a5878; font-size: 0.95em; line-height: 1.55; }
+    textarea { min-height: 140px; }
+    .hint { color: #888; font-size: 12px; margin-top: 4px; }
+    .row { display: flex; gap: 10px; align-items: center; margin-top: 16px; }
+    button { padding: 8px 16px; border-radius: 6px; border: 1px solid #8884; cursor: pointer; }
+    button.primary { background: #2f6fed; color: #fff; border-color: #2f6fed; }
+    #msg { margin-left: 8px; }
+    .ok { color: #1e874b; } .err { color: #c0392b; }
+    code { background: #8882; padding: 1px 5px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>屏幕翻译 · 设置</h1>
+
+  <h2>① API</h2>
+  <label>API Key <span class="hint" style="font-weight:400">（存在浏览器本地 <code>chrome.storage.local</code>，是<b>明文</b>）</span></label>
+  <input id="apiKey" type="password" placeholder="sk-..." autocomplete="off" />
+  <label>接口地址</label>
+  <input id="endpoint" type="text" />
+  <label>模型</label>
+  <input id="model" type="text" />
+  <div class="hint">默认 <code>deepseek-v4-flash</code> + 关思考（防等待过久：安卓版实测 1.7s）</div>
+  <label>识图模型（区域翻译走截图路时用）</label>
+  <input id="visionModel" type="text" />
+  <div class="hint">默认 <code>deepseek-v4-flash</code>；端点固定 <code>https://api.deepseek.com/v1/chat/completions</code>
+    （安卓端实测过的识图规格：关思考、图在前文在后、max_tokens 1500、temperature 0.1）。</div>
+
+  <h2>② 术语表</h2>
+  <label>一行一条：<code>原文=译名</code>（全角 <code>＝</code> 也认）</label>
+  <textarea id="glossary" placeholder="vault=仓库&#10;ヒロ＝希罗&#10;# 井号开头是注释"></textarea>
+  <div class="hint">留空＝不加额外约束；填了就会要求"表里有的必按表、人名前后一致"</div>
+
+  <h2>③ 译文外观</h2>
+  <label>颜色模式</label>
+  <select id="colorMode">
+    <option value="auto">自动（按页面实际背景亮度）</option>
+    <option value="light">浅色配色</option>
+    <option value="dark">深色配色</option>
+    <option value="custom">自定义</option>
+  </select>
+  <div class="hint">「自动」看的是<b>页面自己的背景</b>（深色网站在浅色系统下也能判对），不是系统/浏览器主题。
+    两种自动配色都保证译文与背景对比度 ≥ 4.5:1。</div>
+
+  <div id="customRow" style="display:none;margin-top:10px">
+    <label class="inline">译文文字色 <input id="stFg" type="color" /></label>
+    <label class="inline">竖线色 <input id="stBorder" type="color" /></label>
+    <label class="inline">底色 <input id="stBg" type="color" /></label>
+    <label class="inline"><input id="stBgOn" type="checkbox" /> 启用底色</label>
+    <div class="hint">底色默认透明（不勾「启用」时忽略取色器里的底色）</div>
+  </div>
+
+  <div id="preview">译文预览：This is what a translated paragraph looks like.</div>
+  <div class="hint">预览只是示意；「自动」在真实页面上按那一页的背景亮度取色。</div>
+
+  <h2>④ 限额（防一次翻太多 / 等太久）</h2>
+  <label>每块最大字符数</label>
+  <input id="chunkChars" type="number" min="200" max="8000" />
+  <label>一次最多翻多少段（超出的不硬砍，分批继续）</label>
+  <input id="maxBlocksPerPage" type="number" min="5" max="2000" />
+  <div class="hint">默认 300。这个数只决定"一次点翻译翻多少"，不再把长页面截断：
+    翻不完会提示「一键翻完剩余 x 段」（点一次自动接着翻完，随时可停）。单块请求 25 秒超时（小于后台 30 秒回收窗口）、失败自动重试 1 次，
+    一块失败不影响其它块。</div>
+
+  <div class="row">
+    <button id="save" class="primary">保存</button>
+    <button id="test">链路自检（真打一次 API）</button>
+    <button id="reset">恢复默认</button>
+    <span id="msg"></span>
+  </div>
+
+  <h2>⑤ 怎么用</h2>
+  <p>打开任意英文网页 → 点扩展图标 → <b>翻译本页</b>（或按 <code>Alt+Shift+T</code>）；<code>Alt+Shift+R</code> 还原。<br />
+     译文以小字插在<b>原文下方</b>，原文不动、排版不乱，随时一键还原。<br />
+     长页面不用一次翻完：点「翻译本页」翻一批（默认 300 段），剩下会提示「一键翻完剩余 x 段」——
+     点一次就自动接着往下翻（翻的过程中按钮变「停止」，点了停在当前那一批）；
+     中途停下或刷新页面，再点它就能接着翻（进度存在浏览器会话里，点「还原」会一起清掉）。<br />
+     只想翻某几块：点 popup 里的「选段翻译」→ 鼠标点选要翻的段落（可多选）→ <code>ESC</code> 开始翻。<br />
+     整块内容取不到 DOM 文本（图片 / Canvas / SPA 烂结构）：点「🔎 区域翻译（拖框，万能）」→ 在页面上拖一个框 ——
+     能取到文字就走<b>文字路</b>（译文插在原文下方），取不到就自动<b>截图识图</b>（截图只用于当次识别、不落盘）。</p>
+
+  <script src="options.js"></script>
+</body>
+</html>

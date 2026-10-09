@@ -1,0 +1,16 @@
+# 屏幕翻译 Edge 扩展 · .gitignore
+node_modules/
+*.zip
+*.crx
+.DS_Store
+Thumbs.db
+desktop.ini
+# 本地测试产物
+test/_out/
+test/output/
+
+# 过程文档（交接/任务单/回执/会话记录）—— 只留本地，不进仓库
+_交接文档/
+任务单-*.md
+回执-*.md
+转接文档-*.md

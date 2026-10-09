@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "屏幕翻译（自用 AI 版）",
+  "version": "0.3.1",
+  "description": "用自己那套 AI 翻译看网页：原文下方插入译文，术语可控，随时还原。",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": [
+    "https://api.deepseek.com/*"
+  ],
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "src/popup.html",
+    "default_title": "屏幕翻译"
+  },
+  "options_page": "src/options.html",
+  "commands": {
+    "translate-page": {
+      "suggested_key": { "default": "Alt+Shift+T" },
+      "description": "整页翻译（文章/文献，原文下方插入对照）"
+    },
+    "region-translate": {
+      "suggested_key": { "default": "Alt+Shift+R" },
+      "description": "区域翻译（拖框，万能）"
+    },
+    "restore-page": {
+      "description": "还原本页（移除译文；默认不占快捷键，可在 edge://extensions/shortcuts 里自定）"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*", "file:///*"],
+      "js": ["src/content.js"],
+      "css": ["src/content.css"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <style>
+    :root { color-scheme: light dark; }
+    body { width: 280px; margin: 0; padding: 12px; font: 13px/1.6 system-ui, "Microsoft YaHei", sans-serif; }
+    h1 { font-size: 14px; margin: 0 0 8px; }
+    button { width: 100%; padding: 7px 10px; margin: 4px 0; border-radius: 6px; border: 1px solid #8884;
+             background: #f6f7fb; cursor: pointer; font-size: 13px; }
+    button:hover { background: #eceef8; }
+    button.primary { background: #2f6fed; color: #fff; border-color: #2f6fed; }
+    button.primary:hover { background: #245bd0; }
+    button:disabled { opacity: .55; cursor: default; }
+    .row { display: flex; gap: 6px; }
+    .muted { color: #888; font-size: 12px; }
+    #status { margin-top: 8px; font-size: 12px; white-space: pre-wrap; }
+    .err { color: #c0392b; }
+    .ok { color: #1e874b; }
+    hr { border: none; border-top: 1px solid #8883; margin: 10px 0; }
+    #cont { display: none; }        /* T3：没翻完时由 popup.js 显出来 */
+    /* T3（第 3 轮）：本页跑着旧脚本 / 页面不允许注入 → 顶部红条 */
+    #stale { display: none; margin: 0 0 10px; padding: 8px 10px; border-radius: 6px;
+             background: #fdecea; border: 1px solid #e5534b; color: #b3261e; font-size: 12px; line-height: 1.5; }
+    #stale button { margin: 6px 0 0; background: #e5534b; border-color: #e5534b; color: #fff; }
+    #stale button:hover { background: #cf3f37; }
+    /* T2（第 3 轮）：底部版本号，用来核对"装的是哪一版" */
+    .ver { margin-top: 8px; padding-top: 6px; border-top: 1px solid #8883; color: #888; font-size: 11px; text-align: right; }
+  </style>
+</head>
+<body>
+  <div id="stale">
+    <div id="staleText">本页需刷新一次（F5）才能用新功能</div>
+    <button id="reload">🔄 刷新本页</button>
+  </div>
+  <h1>屏幕翻译 🌐</h1>
+  <button id="translate" class="primary">翻译本页（文章/文献）</button>
+  <button id="region" class="primary" title="拖一个框：能取到 DOM 文本就翻文字，取不到就自动截图识图">🔎 区域翻译（拖框，万能）</button>
+  <button id="cont" class="primary" title="点一下自动翻完剩下的（翻起来后这里变「停止」，随时能停）">一键翻完剩余 0 段</button>
+  <button id="restore">还原（移除译文）</button>
+  <div class="row">
+    <button id="first" title="只翻前 5 段试试水">试翻 5 段</button>
+    <button id="test" title="打一次 API，验证链路">链路自检</button>
+  </div>
+  <button id="pick">选段翻译（只翻我点的几段）</button>
+  <hr />
+  <button id="options">⚙️ 设置（API Key / 术语表）</button>
+  <div id="status" class="muted">就绪</div>
+  <div id="ver" class="ver"></div>
+  <script src="popup.js"></script>
+</body>
+</html>

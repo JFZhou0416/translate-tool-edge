@@ -1,0 +1,197 @@
+/* 屏幕翻译 · 译文样式（计划书 §3.5：灰蓝色、小一号、左侧竖线、不动原排版）
+ *
+ * ⚠️ T2：颜色一律走 CSS 变量，由 content.js 按【页面实际背景亮度】算好后注入到 :root：
+ *      --st-fg      译文文字色
+ *      --st-border  左侧竖线色
+ *      --st-bg      译文底色（默认透明）
+ *   var() 的兜底值 = 浅色配色（万一内容脚本还没跑起来）。
+ *
+ * ⚠️ 这里【故意删掉了】"按系统深浅切换配色"的那条 media query：
+ *   它问的是"系统/浏览器"的深浅，不是"页面自己"的深浅 —— 深色网站 + 浅色系统
+ *   （老板遇到的 NexusMods）正好被它判反，所以改成按页面实际背景判断。
+ */
+.st-trans {
+  margin: 2px 0 6px 0;
+  padding: 0 0 0 8px;
+  border-left: 3px solid var(--st-border, #7aa2f7);
+  color: var(--st-fg, #4a5878);
+  background: var(--st-bg, transparent);
+  font-size: 0.95em;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+/* 表格里的译文（塞在单元格内部）更要克制 */
+td > .st-trans,
+th > .st-trans {
+  margin: 2px 0 0 0;
+  font-size: 0.9em;
+}
+
+/* ---------------------------------------------------------- T4 框选翻译范围 */
+
+/* 鼠标悬停到的候选块 */
+.st-hover {
+  outline: 2px dashed #2f6fed !important;
+  outline-offset: 2px !important;
+}
+
+/* 已选中的块（描边 + 极浅底色，方便一眼看出选了哪几段） */
+.st-selected {
+  outline: 2px solid #2f6fed !important;
+  outline-offset: 2px !important;
+  background-color: rgba(47, 111, 237, 0.08) !important;
+}
+
+/* 选择模式里整页换十字光标：点哪儿都是"选这一段" */
+html.st-selecting,
+html.st-selecting * {
+  cursor: crosshair !important;
+}
+
+/* 右下角"已选 n 段"角标 */
+.st-pill {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2147483647;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #2f6fed;
+  color: #fff;
+  font: 13px/1.5 system-ui, "Microsoft YaHei", sans-serif;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------- 第 4 轮 T1/T3：区域翻译（拖框） */
+
+/* 全屏半透明遮罩：拖框期间盖在整页上（z-index 拉满，光标十字）
+   ⚠️ 命中判定（elementsFromPoint）之前 content.js 会把它 display:none —— 免得取元素时只取到遮罩自己 */
+.st-region-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  background: rgba(15, 23, 42, 0.18);
+  cursor: crosshair;
+}
+
+/* 拖拽中的实时矩形：半透明蓝底 + 描边 */
+.st-region-rect {
+  position: fixed;
+  z-index: 2147483647;
+  border: 2px solid #2f6fed;
+  background: rgba(47, 111, 237, 0.18);
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+/* 顶部提示条（沿用 .st-pill 的观感，但停在顶部中间、要能显示长文案） */
+.st-region-pill {
+  position: fixed;
+  left: 50%;
+  top: 14px;
+  transform: translateX(-50%);
+  z-index: 2147483647;
+  max-width: min(760px, calc(100vw - 32px));
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #2f6fed;
+  color: #fff;
+  font: 13px/1.5 system-ui, "Microsoft YaHei", sans-serif;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  text-align: center;
+}
+
+/* 结果卡片：自己带底色（不跟随页面主题），深色站上也看得清；
+   只有卡片自己是可点的，页面滚动/点击照旧（点卡片外面就关） */
+.st-card {
+  position: fixed;
+  z-index: 2147483647;
+  box-sizing: border-box;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: #ffffff;
+  color: #1f2937;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+  font: 13px/1.6 system-ui, "Microsoft YaHei", sans-serif;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.st-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: #f3f5fb;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  cursor: move;
+}
+
+.st-card-title { font-weight: 600; }
+
+.st-card-tag {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #2f6fed;
+  color: #fff;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.st-card-x {
+  margin-left: auto;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  border-radius: 6px;
+  background: #fff;
+  color: #1f2937;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.st-card-x:hover { background: #fdecea; }
+
+.st-card-body {
+  padding: 10px 12px;
+  max-height: 42vh;
+  overflow: auto;
+  white-space: pre-wrap;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #111827;
+}
+
+.st-card-foot {
+  padding: 0 12px 8px;
+  color: #6b7280;
+  font-size: 11px;
+}
+
+.st-card-bar {
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fafbff;
+}
+
+.st-card-btn {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  border-radius: 6px;
+  background: #fff;
+  color: #1f2937;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.st-card-btn:hover { background: #eceef8; }
+.st-card-btn:disabled { opacity: 0.6; cursor: default; }
